@@ -2,7 +2,7 @@
 
 use PHPUnit\Framework\TestCase;
 
-class ExampleTest extends TestCase 
+class ExampleFeatureTest extends TestCase 
 {
     public function testMultipleTwoNumbers()
     {
