@@ -162,29 +162,59 @@ class YocoJackValidator {
 
     protected function verifyWinner(array $game): string
     {
-        $foundWinner = false;
-        $foundWinner = $this->matchPlayersCardTotals($game);
-        if ($foundWinner) {
-            return $foundWinner;
-        }
+        $game = $this->sortPlayerCardsByRanks($game);
+        $this->isWinnerByTotalPoints($game);
+
         return 'playerAWins';
     }
 
-    protected function matchPlayersCardTotals(array $game)
+    protected function isWinnerByTotalPoints(array $game): bool
     {
         [
+            'playerAWins' => $playerAWins,
             'playerA' => $playerA, 
-            'playerB' => $playerB, 
-            'playerAWins' => $playerAWins
+            'playerB' => $playerB
         ] = $game;
         
-        //
+        return true;
     }
 
-    protected function sortPlayerCardsByRanks()
+    protected function sortPlayerCardsByRanks(array $game): array
     {
-        //
+        $players = [
+            'playerA' => $game['playerA'], 
+            'playerB' => $game['playerB']
+        ];
+        foreach ($players as $key => $player) {
+            $game[$key] = $this->sortCard($player);
+        }
+        
+        return $game;
     }
 
+    protected function sortCard(array $cards): array
+    {
+        $myCardRanks = [];
+        foreach ($cards as $card) {
+            [$rank, $suit] = str_split($card, 1);
+            $suitDetails = $this->suits[$suit];;
+            if (is_array($suitDetails[$card])) {
+                array_push($myCardRanks, ['suit' => $card, 'rank' => $suitDetails[$card]['rank']]);
+            } else {
+                array_push($myCardRanks, ['suit' => $card, 'rank' => $suitDetails[$card]]);
+            }
+        }
+
+        usort($myCardRanks, function ($card1, $card2) {
+            return $card1['rank'] <=> $card2['rank'];
+        });
+
+        $sortedCard = [];
+        foreach ($myCardRanks as $ranked) {
+            array_push($sortedCard, $ranked['suit']);
+        }
+
+        return $sortedCard;
+    }
     
 }
