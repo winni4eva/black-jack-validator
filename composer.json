@@ -2,7 +2,8 @@
     "name": "winnipass/yoco-jack",
     "description": "An online yoco jack results validator",
     "require": {
-        "php": "^7.1.3"
+        "php": "^7.1.3",
+        "illuminate/collections": "^8.37"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5"
@@ -13,6 +14,10 @@
         }
     },
     "scripts": {
-        "test": "phpunit"
+        "test": "phpunit",
+        "yoco": [
+            "chmod +x src/yocojack",
+            "src/yocojack"
+        ]
     }
 }

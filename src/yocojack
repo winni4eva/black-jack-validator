@@ -1,0 +1,22 @@
+#!/usr/bin/env php
+<?php
+set_time_limit(0);
+
+/*
+|--------------------------------------------------------------------------
+| Register The Composer Auto Loader
+|--------------------------------------------------------------------------
+|
+| Composer provides a convenient, automatically generated class loader
+| for our application.
+|
+*/
+
+require __DIR__.'../../vendor/autoload.php';
+
+
+
+$validated = (new Winnipass\YocoJackValidator)->validate();
+
+echo $validated;
+echo "\n";
