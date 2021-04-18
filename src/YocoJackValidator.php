@@ -213,7 +213,7 @@ class YocoJackValidator {
 
     protected function getHighestHands(array $game): int
     {
-        $game = $this->sortByHighestSuit($game);
+        $game = array_reverse($this->sortByHighestSuit($game));
         [$highestRank] = $game;
 
         return $highestRank;
@@ -226,7 +226,6 @@ class YocoJackValidator {
             [$rank, $suit] = strlen($card) == 3 ? str_split($card, 2) : str_split($card, 1);
             $suitRank = $this->suitDifferentialRanks[$suit];
             array_push($myCardRanks, ['suit' => $card, 'rank' => $suitRank]);
-            // }
         }
 
         usort($myCardRanks, function ($card1, $card2) {
@@ -237,7 +236,7 @@ class YocoJackValidator {
         foreach ($myCardRanks as $ranked) {
             array_push($sortedCard, $ranked['rank']);
         }
-
+    
         return $sortedCard;
     }
 
