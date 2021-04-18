@@ -4,6 +4,7 @@ namespace Winnipass;
 
 class YocoJackValidator {
 
+    const MAXIMUM_POINT = 21;
     protected $testCasesPath = 'https://s3-eu-west-1.amazonaws.com/yoco-testing/tests.json';
     protected $suits = [
         '0' => 0,
@@ -148,8 +149,12 @@ class YocoJackValidator {
             ],
         ],
     ];
-
-    const MAXIMUM_POINT = 21;
+    protected $suitDifferentialRanks = [
+        'S' => 4,
+        'H' => 3,
+        'C' => 2,
+        'D' => 1
+    ];
 
     public function validate(): void 
     {
@@ -172,7 +177,9 @@ class YocoJackValidator {
         $victoriousPlayer = $winner ? 'playerA' : 'playerB';
         $expectedWinner = $playerAWins ? 'playerA' : 'playerB';
 
-        return "GAME WINNER : $victoriousPlayer ". " EXPECTED WINNER : $expectedWinner";
+        $message = "GAME WINNER : $victoriousPlayer ". " EXPECTED WINNER : $expectedWinner";
+
+        return $message;
     }
 
     protected function isWinnerByTotalPoints(array $game): bool
@@ -190,10 +197,48 @@ class YocoJackValidator {
             return false;
         } else if($playerBTotalPoints > self::MAXIMUM_POINT) {
             return true;
+        } else if ($playerATotalPoints === $playerBTotalPoints) {
+            $playerAHighest = $this->getHighestHands($playerA);
+            $playerBHighest = $this->getHighestHands($playerB);
+            if ($playerAHighest > $playerBHighest) {
+                return true;
+            } else if ($playerBHighest > $playerAHighest) {
+                return false;
+            }
         } else if ($playerATotalPoints < $playerBTotalPoints) {
             return true;
         } 
         return false;
+    }
+
+    protected function getHighestHands(array $game): int
+    {
+        $game = $this->sortByHighestSuit($game);
+        [$highestRank] = $game;
+
+        return $highestRank;
+    }
+
+    protected function sortByHighestSuit(array $cards): array
+    {
+        $myCardRanks = [];
+        foreach ($cards as $card) {
+            [$rank, $suit] = strlen($card) == 3 ? str_split($card, 2) : str_split($card, 1);
+            $suitRank = $this->suitDifferentialRanks[$suit];
+            array_push($myCardRanks, ['suit' => $card, 'rank' => $suitRank]);
+            // }
+        }
+
+        usort($myCardRanks, function ($card1, $card2) {
+            return $card1['rank'] <=> $card2['rank'];
+        });
+
+        $sortedCard = [];
+        foreach ($myCardRanks as $ranked) {
+            array_push($sortedCard, $ranked['rank']);
+        }
+
+        return $sortedCard;
     }
 
     protected function getGameTotalPoints(array $cards) : int
