@@ -4,10 +4,26 @@ namespace Winnipass;
 
 class YocoJackValidator {
 
+    /**
+     * Maximum card points rquired to win.
+     *
+     * @var string
+     */
     const MAXIMUM_POINT = 21;
-    protected $testCasesPath = 'https://s3-eu-west-1.amazonaws.com/yoco-testing/tests.json';
+
+    /**
+     * Default games path.
+     *
+     * @var string
+     */
+    protected $yJackGamesPath = 'https://s3-eu-west-1.amazonaws.com/yoco-testing/tests.json';
+
+    /**
+     * Card suits and their respective points.
+     *
+     * @var aray
+     */
     protected $suits = [
-        '0' => 0,
         'C' => [
             '2C' => 2,
             '3C' => 3,
@@ -148,13 +164,26 @@ class YocoJackValidator {
                 'isFace' => false,
             ],
         ],
+        '0' => 0,
     ];
+
+    /**
+     * Card suits ranks.
+     *
+     * @var aray
+     */
     protected $suitDifferentialSuits = [
         'S' => 4,
         'H' => 3,
         'C' => 2,
         'D' => 1
     ];
+
+    /**
+     * Card rank points.
+     *
+     * @var aray
+     */
     protected $suitDifferentialRanks = [
         'K' => 4,
         'Q' => 3,
@@ -162,29 +191,73 @@ class YocoJackValidator {
         '10' => 1
     ];
 
-    public function validate(): void 
-    {
-        $testCases = file_get_contents($this->testCasesPath);
-        $games = json_decode($testCases, true);
 
-        foreach ($games as $key => $game) {
-            $winner = $this->verifyWinner($game);
-            var_dump($winner);
+    /**
+     * Create a new YJackValidator instance.
+     * 
+     * @var string $gamesPath
+     *
+     * @return void
+     */
+    public function __construct(string $gamesPath = null)
+    {
+        if ($gamesPath) {
+            $this->yJackGamesPath = $gamesPath;
         }
     }
 
-    protected function verifyWinner(array $game): string
+    /**
+     * Validates an array of yJack games.
+     *
+     * @return bool
+     */
+    public function validate(): bool 
+    {
+        $testCases = file_get_contents($this->yJackGamesPath);
+        $games = json_decode($testCases, true);
+        $allTestsPassed = true;
+        foreach ($games as $key => $game) {
+            [$message, $passed] = $this->verifyWinner($game);
+            var_dump($message);
+            if (!$passed) {
+                $allTestsPassed = false;
+            }
+        }
+        return $allTestsPassed;
+    }
+
+    /**
+     * Validates a single yJack game.
+     * 
+     * @var array $game
+     *
+     * @return array
+     */
+    protected function verifyWinner(array $game): array
     {
         $sortedgame = $this->sortPlayerCardsByRanks($game);
         $winner = $this->isWinnerByTotalPoints($sortedgame);
+        $passedTest = true;
         $victoriousPlayer = $winner ? 'playerA' : 'playerB';
         $expectedWinner = $game['playerAWins'] ? 'playerA' : 'playerB';
 
         $message = "GAME WINNER : $victoriousPlayer ". " EXPECTED WINNER : $expectedWinner";
+        if ($winner != $game['playerAWins']) {
+            $passedTest = false;
+            //var_dump($message);
+            //echo "\n";
+        }
 
-        return $message;
+        return [$message, $passedTest];
     }
 
+    /**
+     * Calculates yJack game points for players.
+     * 
+     * @var array $game
+     *
+     * @return bool
+     */
     protected function isWinnerByTotalPoints(array $game): bool
     {
         [
@@ -220,6 +293,9 @@ class YocoJackValidator {
                 } else if ($playerBHighest > $playerAHighest) {
                     return false;
                 } else {
+                    echo "MAMAMIAAAA";
+                    echo "\n";
+                    var_dump($game);
                     return false;
                 }
             }
@@ -227,6 +303,13 @@ class YocoJackValidator {
         return false;
     }
 
+    /**
+     * Gets the highest ranked card from a set of game cards.
+     * 
+     * @var array $game
+     *
+     * @return int
+     */
     protected function getHighestRank(array $game): int
     {
         $game = array_reverse($this->sortByHighestRank($game));
@@ -235,6 +318,13 @@ class YocoJackValidator {
         return $highestRank;
     }
 
+    /**
+     * Sorts a deck of cards by rank.
+     * 
+     * @var array $cards
+     *
+     * @return array
+     */
     protected function sortByHighestRank(array $cards): array
     {
         $myCardRanks = [];
@@ -256,6 +346,13 @@ class YocoJackValidator {
         return $sortedCard;
     }
 
+    /**
+     * Gets the highest ranked hand from a set of cards.
+     * 
+     * @var array $game
+     *
+     * @return int
+     */
     protected function getHighestHands(array $game): int
     {
         $game = array_reverse($this->sortByHighestSuit($game));
@@ -264,6 +361,13 @@ class YocoJackValidator {
         return $highestRank;
     }
 
+    /**
+     * Sorts a deck of cards by suit.
+     * 
+     * @var array $game
+     *
+     * @return array
+     */
     protected function sortByHighestSuit(array $cards): array
     {
         $myCardRanks = [];
@@ -285,6 +389,13 @@ class YocoJackValidator {
         return $sortedCard;
     }
 
+    /**
+     * Calculates the total points in a game.
+     * 
+     * @var array $cards
+     *
+     * @return int
+     */
     protected function getGameTotalPoints(array $cards) : int
     {
         $totalPoints = 0;
@@ -301,6 +412,13 @@ class YocoJackValidator {
         return $totalPoints;
     }
 
+    /**
+     * Sorts a games cards by rank.
+     * 
+     * @var array $game
+     *
+     * @return array
+     */
     protected function sortPlayerCardsByRanks(array $game): array
     {
         $players = [
@@ -314,6 +432,13 @@ class YocoJackValidator {
         return $game;
     }
 
+    /**
+     * Sorts a single cards by rank.
+     * 
+     * @var array $game
+     *
+     * @return array
+     */
     protected function sortCard(array $cards): array
     {
         $myCardRanks = [];
