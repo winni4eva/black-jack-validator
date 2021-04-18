@@ -16,7 +16,4 @@ require __DIR__.'../../vendor/autoload.php';
 
 
 
-$validated = (new Winnipass\YocoJackValidator)->validate();
-
-echo $validated;
-echo "\n";
+(new Winnipass\YocoJackValidator)->validate();

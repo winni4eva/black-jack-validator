@@ -6,6 +6,7 @@ class YocoJackValidator {
 
     protected $testCasesPath = 'https://s3-eu-west-1.amazonaws.com/yoco-testing/tests.json';
     protected $suits = [
+        '0' => 0,
         'C' => [
             '2C' => 2,
             '3C' => 3,
@@ -156,16 +157,22 @@ class YocoJackValidator {
         $testCasesArray = json_decode($testCases, true);
 
         foreach ($testCasesArray as $key => $test) {
-            $this->verifyWinner($test);
+            $winner = $this->verifyWinner($test);
+            var_dump($winner);
         }
     }
 
     protected function verifyWinner(array $game): string
     {
+        [
+            'playerAWins' => $playerAWins,
+        ] = $game;
         $game = $this->sortPlayerCardsByRanks($game);
-        $this->isWinnerByTotalPoints($game);
+        $winner = $this->isWinnerByTotalPoints($game);
+        $victoriousPlayer = $winner ? 'playerA' : 'playerB';
+        $expectedWinner = $playerAWins ? 'playerA' : 'playerB';
 
-        return 'playerAWins';
+        return "GAME WINNER : $victoriousPlayer ". " EXPECTED WINNER : $expectedWinner";
     }
 
     protected function isWinnerByTotalPoints(array $game): bool
@@ -176,7 +183,33 @@ class YocoJackValidator {
             'playerB' => $playerB
         ] = $game;
         
-        return true;
+        $playerATotalPoints = $this->getGameTotalPoints($playerA);
+        $playerBTotalPoints = $this->getGameTotalPoints($playerB);
+        
+        if ($playerATotalPoints > self::MAXIMUM_POINT) {
+            return false;
+        } else if($playerBTotalPoints > self::MAXIMUM_POINT) {
+            return true;
+        } else if ($playerATotalPoints < $playerBTotalPoints) {
+            return true;
+        } 
+        return false;
+    }
+
+    protected function getGameTotalPoints(array $cards) : int
+    {
+        $totalPoints = 0;
+        foreach ($cards as $card) {
+            [$rank, $suit] = strlen($card) == 3 ? str_split($card, 2) : str_split($card, 1);
+            $suitDetails = $this->suits[$suit];
+            if (is_array($suitDetails[$card])) {
+                $totalPoints += $suitDetails[$card]['points'];
+            } else {
+                $totalPoints += $suitDetails[$card];
+            }
+        }
+
+        return $totalPoints;
     }
 
     protected function sortPlayerCardsByRanks(array $game): array
@@ -196,8 +229,8 @@ class YocoJackValidator {
     {
         $myCardRanks = [];
         foreach ($cards as $card) {
-            [$rank, $suit] = str_split($card, 1);
-            $suitDetails = $this->suits[$suit];;
+            [$rank, $suit] = strlen($card) == 3 ? str_split($card, 2) : str_split($card, 1);
+            $suitDetails = $this->suits[$suit];
             if (is_array($suitDetails[$card])) {
                 array_push($myCardRanks, ['suit' => $card, 'rank' => $suitDetails[$card]['rank']]);
             } else {
