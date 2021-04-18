@@ -149,33 +149,36 @@ class YocoJackValidator {
             ],
         ],
     ];
-    protected $suitDifferentialRanks = [
+    protected $suitDifferentialSuits = [
         'S' => 4,
         'H' => 3,
         'C' => 2,
         'D' => 1
     ];
+    protected $suitDifferentialRanks = [
+        'K' => 4,
+        'Q' => 3,
+        'J' => 2,
+        '10' => 1
+    ];
 
     public function validate(): void 
     {
         $testCases = file_get_contents($this->testCasesPath);
-        $testCasesArray = json_decode($testCases, true);
+        $games = json_decode($testCases, true);
 
-        foreach ($testCasesArray as $key => $test) {
-            $winner = $this->verifyWinner($test);
+        foreach ($games as $key => $game) {
+            $winner = $this->verifyWinner($game);
             var_dump($winner);
         }
     }
 
     protected function verifyWinner(array $game): string
     {
-        [
-            'playerAWins' => $playerAWins,
-        ] = $game;
-        $game = $this->sortPlayerCardsByRanks($game);
-        $winner = $this->isWinnerByTotalPoints($game);
+        $sortedgame = $this->sortPlayerCardsByRanks($game);
+        $winner = $this->isWinnerByTotalPoints($sortedgame);
         $victoriousPlayer = $winner ? 'playerA' : 'playerB';
-        $expectedWinner = $playerAWins ? 'playerA' : 'playerB';
+        $expectedWinner = $game['playerAWins'] ? 'playerA' : 'playerB';
 
         $message = "GAME WINNER : $victoriousPlayer ". " EXPECTED WINNER : $expectedWinner";
 
@@ -197,18 +200,63 @@ class YocoJackValidator {
             return false;
         } else if($playerBTotalPoints > self::MAXIMUM_POINT) {
             return true;
-        } else if ($playerATotalPoints === $playerBTotalPoints) {
-            $playerAHighest = $this->getHighestHands($playerA);
-            $playerBHighest = $this->getHighestHands($playerB);
-            if ($playerAHighest > $playerBHighest) {
-                return true;
-            } else if ($playerBHighest > $playerAHighest) {
-                return false;
-            }
         } else if ($playerATotalPoints < $playerBTotalPoints) {
             return true;
+        } else if ($playerATotalPoints === $playerBTotalPoints) {
+            $playerAHighestRank = $this->getHighestRank($playerA);
+            $playerBHighestRank = $this->getHighestRank($playerB);
+            
+            if ($playerAHighestRank > $playerBHighestRank) {
+                return true;
+            } else if ($playerBHighestRank > $playerAHighestRank) {
+                return false;
+            } else {
+
+                $playerAHighest = $this->getHighestHands($playerA);
+                $playerBHighest = $this->getHighestHands($playerB);
+                if ($playerAHighest > $playerBHighest) {
+                    return true;
+                } else if ($playerBHighest > $playerAHighest) {
+                    return false;
+                } else {
+                    return false;
+                }
+            }
         } 
         return false;
+    }
+
+    protected function getHighestRank(array $game): int
+    {
+        //echo "\n";
+        //echo "===============GAME START======================";
+        //var_dump($game);
+       // echo "===============GAME END======================";
+        $game = array_reverse($this->sortByHighestRank($game));
+        [$highestRank] = $game;
+
+        return $highestRank;
+    }
+
+    protected function sortByHighestRank(array $cards): array
+    {
+        $myCardRanks = [];
+        foreach ($cards as $card) {
+            [$rank, $suit] = strlen($card) == 3 ? str_split($card, 2) : str_split($card, 1);
+            $suitRank = $this->suitDifferentialRanks[$rank] ?? 0;
+            array_push($myCardRanks, ['suit' => $card, 'rank' => $suitRank]);
+        }
+
+        usort($myCardRanks, function ($card1, $card2) {
+            return $card1['rank'] <=> $card2['rank'];
+        });
+
+        $sortedCard = [];
+        foreach ($myCardRanks as $ranked) {
+            array_push($sortedCard, $ranked['rank']);
+        }
+
+        return $sortedCard;
     }
 
     protected function getHighestHands(array $game): int
@@ -224,7 +272,7 @@ class YocoJackValidator {
         $myCardRanks = [];
         foreach ($cards as $card) {
             [$rank, $suit] = strlen($card) == 3 ? str_split($card, 2) : str_split($card, 1);
-            $suitRank = $this->suitDifferentialRanks[$suit];
+            $suitRank = $this->suitDifferentialSuits[$suit];
             array_push($myCardRanks, ['suit' => $card, 'rank' => $suitRank]);
         }
 
