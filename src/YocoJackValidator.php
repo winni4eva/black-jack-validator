@@ -218,10 +218,11 @@ class YocoJackValidator {
         $allTestsPassed = true;
         foreach ($games as $key => $game) {
             [$message, $passed] = $this->verifyWinner($game);
-            var_dump($message);
             if (!$passed) {
                 $allTestsPassed = false;
             }
+            var_dump($message);
+            echo "\n";
         }
         return $allTestsPassed;
     }
@@ -238,15 +239,12 @@ class YocoJackValidator {
         $sortedgame = $this->sortPlayerCardsByRanks($game);
         $winner = $this->isWinnerByTotalPoints($sortedgame);
         $passedTest = true;
+
         $victoriousPlayer = $winner ? 'playerA' : 'playerB';
         $expectedWinner = $game['playerAWins'] ? 'playerA' : 'playerB';
 
         $message = "GAME WINNER : $victoriousPlayer ". " EXPECTED WINNER : $expectedWinner";
-        if ($winner != $game['playerAWins']) {
-            $passedTest = false;
-            //var_dump($message);
-            //echo "\n";
-        }
+        $passedTest = false;
 
         return [$message, $passedTest];
     }
@@ -293,10 +291,7 @@ class YocoJackValidator {
                 } else if ($playerBHighest > $playerAHighest) {
                     return false;
                 } else {
-                    echo "MAMAMIAAAA";
-                    echo "\n";
-                    var_dump($game);
-                    return false;
+                    return true;
                 }
             }
         } 
