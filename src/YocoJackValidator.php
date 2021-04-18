@@ -200,8 +200,10 @@ class YocoJackValidator {
             return false;
         } else if($playerBTotalPoints > self::MAXIMUM_POINT) {
             return true;
-        } else if ($playerATotalPoints < $playerBTotalPoints) {
+        } else if ($playerATotalPoints > $playerBTotalPoints) {
             return true;
+        } else if ($playerBTotalPoints > $playerATotalPoints) {
+            return false;
         } else if ($playerATotalPoints === $playerBTotalPoints) {
             $playerAHighestRank = $this->getHighestRank($playerA);
             $playerBHighestRank = $this->getHighestRank($playerB);
@@ -211,7 +213,6 @@ class YocoJackValidator {
             } else if ($playerBHighestRank > $playerAHighestRank) {
                 return false;
             } else {
-
                 $playerAHighest = $this->getHighestHands($playerA);
                 $playerBHighest = $this->getHighestHands($playerB);
                 if ($playerAHighest > $playerBHighest) {
@@ -228,10 +229,6 @@ class YocoJackValidator {
 
     protected function getHighestRank(array $game): int
     {
-        //echo "\n";
-        //echo "===============GAME START======================";
-        //var_dump($game);
-       // echo "===============GAME END======================";
         $game = array_reverse($this->sortByHighestRank($game));
         [$highestRank] = $game;
 
