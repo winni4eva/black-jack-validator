@@ -7,7 +7,8 @@ class YocoJackTest extends TestCase
 {
     public function testAllGamesAreWonByTheExpectedPlayer()
     {
-        $result = (new YocoJackValidator)->validate();
+        $jsonFilePath = __DIR__.'../../tests.json';
+        $result = (new YocoJackValidator($jsonFilePath))->validate();
 
         $this->assertTrue($result);
     }

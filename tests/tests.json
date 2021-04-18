@@ -1,0 +1,26 @@
+[
+  {
+    "playerA": [
+      "8D",
+      "JS"
+    ],
+    "playerAWins": false,
+    "playerB": [
+      "5D",
+      "QS",
+      "3H"
+    ]
+  },
+  {
+    "playerA": [
+      "10D",
+      "JH"
+    ],
+    "playerAWins": true,
+    "playerB": [
+      "QS",
+      "4C",
+      "JC"
+    ]
+  }
+]

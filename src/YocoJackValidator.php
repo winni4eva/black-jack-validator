@@ -238,13 +238,12 @@ class YocoJackValidator {
     {
         $sortedgame = $this->sortPlayerCardsByRanks($game);
         $winner = $this->isWinnerByTotalPoints($sortedgame);
-        $passedTest = true;
 
         $victoriousPlayer = $winner ? 'playerA' : 'playerB';
         $expectedWinner = $game['playerAWins'] ? 'playerA' : 'playerB';
 
         $message = "GAME WINNER : $victoriousPlayer ". " EXPECTED WINNER : $expectedWinner";
-        $passedTest = false;
+        $passedTest =  $victoriousPlayer == $expectedWinner ? true : false;
 
         return [$message, $passedTest];
     }
